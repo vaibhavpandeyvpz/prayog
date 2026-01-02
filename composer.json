@@ -1,0 +1,50 @@
+{
+  "authors": [
+    {
+      "name": "Vaibhav Pandey",
+      "email": "contact@vaibhavpandey.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Prayog\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Prayog\\": "tests/"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "name": "vaibhavpandeyvpz/prayog",
+  "description": "A dead simple, minimal REPL (Read-Evaluate-Print-Loop) for PHP 8.2+",
+  "homepage": "https://github.com/vaibhavpandeyvpz/prayog",
+  "keywords": [
+    "repl",
+    "read-eval-print-loop",
+    "interactive",
+    "shell",
+    "console",
+    "cli",
+    "php-repl",
+    "interactive-shell",
+    "terminal",
+    "debug",
+    "development",
+    "testing"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "ext-readline": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0"
+  },
+  "bin": [
+    "bin/prayog"
+  ],
+  "type": "library"
+}

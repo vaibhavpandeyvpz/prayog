@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Prayog\Config;
+use Prayog\Repl;
+
+if (!extension_loaded('readline')) {
+    fwrite(STDERR, "Error: readline extension is required.\n");
+    exit(1);
+}
+
+$config = new Config();
+$repl = new Repl($config);
+$repl->start();
