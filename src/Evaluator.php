@@ -42,12 +42,23 @@ class Evaluator
 
             // Capture output
             ob_start();
-            $result = eval($wrappedCode);
-            $output = ob_get_clean();
+            try {
+                $result = eval($wrappedCode);
+                $output = ob_get_clean();
 
-            // Display captured output
-            if ($output !== '') {
-                echo $output;
+                // Display captured output (ensure it ends with newline)
+                if ($output !== '') {
+                    echo $output;
+                    // Ensure output ends with newline so prompt appears on next line
+                    if (! str_ends_with($output, PHP_EOL)) {
+                        echo PHP_EOL;
+                    }
+                    $this->flushOutput();
+                }
+            } catch (\Throwable $e) {
+                // Discard any output captured before the error
+                ob_end_clean();
+                throw $e;
             }
 
             // Update variables from local scope
@@ -55,10 +66,8 @@ class Evaluator
             $this->updateVariables($varsBefore, $varsAfter);
 
             return $result;
-        } catch (\ParseError $e) {
-            // If it's a parse error, try to execute as-is (might be incomplete)
-            throw $e;
         } catch (\Throwable $e) {
+            // Re-throw all exceptions to be handled by Repl
             throw $e;
         }
     }
@@ -102,6 +111,13 @@ class Evaluator
         }
 
         return $code;
+    }
+
+    private function flushOutput(): void
+    {
+        if (ob_get_level() === 0) {
+            flush();
+        }
     }
 
     private function isExpression(string $code): bool

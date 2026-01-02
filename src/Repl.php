@@ -41,7 +41,19 @@ class Repl
                 $code = $this->input->read();
 
                 if ($code === null) {
-                    // Ctrl+D pressed
+                    // Ctrl+D pressed - check if there's pending buffer content
+                    if ($this->input->hasPendingBuffer()) {
+                        $pendingCode = $this->input->getPendingBuffer();
+                        // If there's pending code, try to evaluate it (will likely error)
+                        try {
+                            $this->evaluator->evaluate($pendingCode);
+                        } catch (\Throwable $e) {
+                            $this->handleError($e);
+                        }
+                    }
+
+                    // Reset buffer and exit
+                    $this->input->reset();
                     $this->exit();
 
                     return;
@@ -58,13 +70,11 @@ class Repl
 
                 // Print result if not null
                 if ($result !== null) {
-                    echo $this->formatter->format($result)."\n";
+                    echo $this->formatter->format($result).PHP_EOL;
+                    $this->flushOutput();
                 }
-            } catch (\ParseError $e) {
-                // Parse errors might indicate incomplete input, but we'll show it anyway
-                $this->printError('Parse error', $e->getMessage());
             } catch (\Throwable $e) {
-                $this->printError($e::class, $e->getMessage());
+                $this->handleError($e);
             }
         }
     }
@@ -88,27 +98,51 @@ class Repl
     private function printWelcome(): void
     {
         if ($this->config->welcomeMessage !== null) {
-            echo $this->config->welcomeMessage."\n";
+            echo $this->config->welcomeMessage.PHP_EOL;
 
             return;
         }
 
         // Default welcome message
-        echo "Prayog (प्रयोग) - PHP REPL\n";
-        echo 'PHP '.PHP_VERSION."\n";
-        echo "Type 'exit' or press Ctrl+D to quit.\n\n";
+        echo 'Prayog (प्रयोग) - PHP REPL'.PHP_EOL;
+        echo 'PHP '.PHP_VERSION.PHP_EOL;
+        echo "Type 'exit' or press Ctrl+D to quit.".PHP_EOL.PHP_EOL;
     }
 
     private function printError(string $type, string $message): void
     {
         $color = $this->config->colorOutput ? "\033[31m" : '';
         $reset = $this->config->colorOutput ? "\033[0m" : '';
-        echo "{$color}Error ({$type}): {$message}{$reset}\n";
+        // Error message already includes newline at the end
+        echo "{$color}Error ({$type}): {$message}{$reset}".PHP_EOL;
     }
 
     private function exit(): void
     {
         $this->input->saveHistory();
-        echo "\nGoodbye!\n";
+        echo PHP_EOL.'Goodbye!'.PHP_EOL;
+    }
+
+    private function clearOutputBuffers(): void
+    {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+    }
+
+    private function flushOutput(): void
+    {
+        if (ob_get_level() === 0) {
+            flush();
+        }
+    }
+
+    private function handleError(\Throwable $e): void
+    {
+        $this->input->reset();
+        $this->clearOutputBuffers();
+        $errorType = $e instanceof \ParseError ? 'Parse error' : $e::class;
+        $this->printError($errorType, $e->getMessage());
+        $this->flushOutput();
     }
 }

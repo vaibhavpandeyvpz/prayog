@@ -48,7 +48,7 @@ class ReadlineInput
             return $this->read();
         }
 
-        $this->buffer .= $line."\n";
+        $this->buffer .= $line.PHP_EOL;
 
         if ($this->isCompleteStatement($this->buffer)) {
             $code = $this->buffer;
@@ -64,6 +64,21 @@ class ReadlineInput
     public function saveHistory(): void
     {
         readline_write_history($this->historyFile);
+    }
+
+    public function reset(): void
+    {
+        $this->buffer = '';
+    }
+
+    public function hasPendingBuffer(): bool
+    {
+        return $this->buffer !== '';
+    }
+
+    public function getPendingBuffer(): string
+    {
+        return $this->buffer;
     }
 
     private function loadHistory(): void

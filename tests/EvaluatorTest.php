@@ -135,7 +135,8 @@ final class EvaluatorTest extends TestCase
         ob_start();
         $result = $this->evaluator->evaluate('echo "test";');
         $output = ob_get_clean();
-        $this->assertSame('test', $output);
+        // Output should end with newline
+        $this->assertSame('test'.PHP_EOL, $output);
         $this->assertNull($result);
     }
 
@@ -265,7 +266,8 @@ final class EvaluatorTest extends TestCase
         ob_start();
         $result = $this->evaluator->evaluate('echo "output";');
         $output = ob_get_clean();
-        $this->assertSame('output', $output);
+        // Output should end with newline
+        $this->assertSame('output'.PHP_EOL, $output);
         $this->assertNull($result);
     }
 
@@ -274,7 +276,8 @@ final class EvaluatorTest extends TestCase
         ob_start();
         $result = $this->evaluator->evaluate('print "output";');
         $output = ob_get_clean();
-        $this->assertSame('output', $output);
+        // Output should end with newline
+        $this->assertSame('output'.PHP_EOL, $output);
         // Note: print is a statement, not wrapped with return, so result is null
         $this->assertNull($result);
     }
